@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Learning with Circular Visualizer</title>
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #000000; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #8C6A5D;
+            color: #ffffff; 
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            background-color: #5F374B;
+            color: #ffffff;
+        }
+
+        button:hover {
+            background-color: #430A5D;
+        }
+
+        #canvas-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #microphone-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            color: #555;
+        }
+
+        #feedback {
+            margin-bottom: 20px;
+        }
+
+        #transcript {
+            margin-bottom: 20px;
+        }
+
+        .button {
+            margin-bottom: 10px;
+        }
+
+        .dark-mode {
+            background-color: #2D3250;
+            color: #ffffff;
+        }
+
+        .dark-mode header {
+            background-color: #424769;
+        }
+
+        .dark-mode button {
+            background-color: #7077A1;
+            color: #ffffff;
+        }
+
+        .dark-mode button:hover {
+            background-color: #F6B17A;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Vocabulary Learning</h1>
+        <button id="modeToggleBtn">Dark Mode</button>
+    </header>
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div id="microphone-icon">🎙</div>
+    </div>
+    <button id="startBtn" class="button">Start Learning</button>
+    <button id="nextBtn" class="button" style="display: none;">Next Word</button>
+    <div id="feedback"></div>
+    <div id="transcript"></div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const transcriptElement = document.getElementById('transcript');
+        const feedbackElement = document.getElementById('feedback');
+        const microphoneIcon = document.getElementById('microphone-icon');
+        const modeToggleBtn = document.getElementById('modeToggleBtn');
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let bufferLength;
+        let currentWordIndex = 0;
+        const vocabulary = [
+            { word: 'compassion', meaning: 'Feeling sad when you see someone hurt and helping them. Example: When you give your friend a hug because they are sad.' },
+            { word: 'resilience', meaning: 'Bouncing back after something bad happens. Example: When you fall off your bike and get back up to try again.' },
+            { word: 'integrity', meaning: 'Doing the right thing, even when no one is watching. Example: Returning a lost toy you found on the playground.' },
+            { word: 'empathy', meaning: 'Understanding how someone else feels. Example: When your friend is happy, you feel happy too.' },
+            { word: 'curiosity', meaning: 'Wanting to learn and know more about everything. Example: Asking a lot of questions about how things work.' },
+            { word: 'perseverance', meaning: 'Never giving up, even when it’s hard. Example: Trying again and again until you finish a big puzzle.' },
+            { word: 'gratitude', meaning: 'Being thankful for what you have. Example: Saying thank you when someone gives you a gift.' },
+            { word: 'humility', meaning: 'Not thinking you are better than others. Example: Sharing the credit with your team when you win a game.' },
+            { word: 'innovation', meaning: 'Coming up with new ideas and ways to do things. Example: Inventing a new game to play with your friends.' },
+            { word: 'courage', meaning: 'Being brave and doing something even if you are scared. Example: Speaking in front of the class even when you are nervous.' },
+            { word: 'wisdom', meaning: 'Knowing what is right and making good choices. Example: Choosing to do your homework before playing.' },
+            { word: 'justice', meaning: 'Being fair and making sure everyone is treated equally. Example: Sharing your toys so everyone gets a turn.' },
+            { word: 'honesty', meaning: 'Telling the truth and not lying. Example: Admitting if you broke a vase at home.' },
+            { word: 'patience', meaning: 'Waiting calmly without getting upset. Example: Waiting your turn in line without complaining.' },
+            { word: 'loyalty', meaning: 'Being a good friend and standing by someone. Example: Defending your friend if someone says something mean about them.' },
+            { word: 'respect', meaning: 'Treating others well and being polite. Example: Listening to your parents when they talk to you.' },
+            { word: 'ambition', meaning: 'Wanting to achieve big things. Example: Wanting to become a doctor when you grow up.' },
+            { word: 'determination', meaning: 'Deciding to do something and not stopping. Example: Practicing every day to get better at soccer.' },
+            { word: 'collaboration', meaning: 'Working together with others to achieve something. Example: Building a sandcastle with your friends.' },
+            { word: 'creativity', meaning: 'Using your imagination to create new things. Example: Drawing a picture of a magical world.' }
+        ];
+
+        let recognition;
+        let isDarkMode = true; // Default to dark mode
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        function drawWave(color) {
+            requestAnimationFrame(() => drawWave(color));
+
+            if (!analyser) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 2;
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fill();
+
+            const bars = 100;
+            const barSpacing = 2;
+            const startAngle = -Math.PI / 2;
+            const barWidth = (2 * Math.PI - bars * barSpacing) / bars;
+
+            for (let i = 0; i < bars; i++) {
+                const angle = startAngle + i * (barWidth + barSpacing);
+                const barHeight = dataArray[i] / 255 * radius;
+                const x1 = centerX + Math.cos(angle) * (radius - barHeight);
+                const y1 = centerY + Math.sin(angle) * (radius - barHeight);
+                const x2 = centerX + Math.cos(angle) * radius;
+                const y2 = centerY + Math.sin(angle) * radius;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+
+        async function startVisualization() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new AudioContext();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                drawWave(isDarkMode ? '#FF5733' : '#007bff');
+            } catch (err) {
+                console.error('Error accessing audio stream: ', err);
+            }
+        }
+
+        function startRecognition() {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.interimResults = false;
+            recognition.continuous = false;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                transcriptElement.textContent = transcript;
+
+                const currentWord = vocabulary[currentWordIndex].word;
+                if (transcript === currentWord) {
+                    const meaning = vocabulary[currentWordIndex].meaning;
+                    feedbackElement.textContent = `Hurray! "${transcript}" is correct. It means: ${meaning}`;
+                    feedbackElement.style.color = "green";
+                    speak(`Hurray! "${transcript}" is correct. It means: ${meaning}`);
+                    currentWordIndex++;
+                    if (currentWordIndex < vocabulary.length) {
+                        nextBtn.style.display = "inline-block";
+                    } else {
+                        feedbackElement.textContent = "Congratulations! You've completed all the words.";
+                        nextBtn.style.display = "none";
+                    }
+                } else {
+                    feedbackElement.textContent = `Sorry, "${transcript}" is not correct. Please try again.`;
+                    feedbackElement.style.color = "red";
+                    recognition.stop();
+                    recognition.onend = () => {
+                        feedbackElement.textContent = `The correct word was "${currentWord}". Moving to the next word.`;
+                        feedbackElement.style.color = "blue";
+                        currentWordIndex++;
+                        if (currentWordIndex < vocabulary.length) {
+                            startLearning();
+                        } else {
+                            feedbackElement.textContent = "Congratulations! You've completed all the words.";
+                            nextBtn.style.display = "none";
+                        }
+                    };
+                }
+            };
+            recognition.start();
+        }
+
+        function speak(text) {
+            const voiceParams = { languageCode: 'en-US', name: 'en-US-Wavenet-D' };
+            const ttsRequest = {
+                input: { text: text },
+                voice: voiceParams,
+                audioConfig: { audioEncoding: 'MP3' }
+            };
+
+            fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyD5Cck43h_wdNEmzQTT4WKXAEhAh_YapGA`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ttsRequest)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+                    audio.play();
+                    audio.onended = () => {
+                        microphoneIcon.style.backgroundColor = isDarkMode ? '#FF5733' : '#007bff';
+                        startRecognition();
+                    };
+                })
+                .catch(error => console.error('Error synthesizing speech:', error));
+        }
+
+        function startLearning() {
+            feedbackElement.textContent = "";
+            nextBtn.style.display = "none";
+            const word = vocabulary[currentWordIndex].word;
+            speak(`Please repeat the word: ${word}`);
+        }
+
+        startBtn.addEventListener('click', () => {
+            startVisualization();
+            startLearning();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            feedbackElement.textContent = "";
+            nextBtn.style.display = "none";
+            currentWordIndex++;
+            if (currentWordIndex < vocabulary.length) {
+                startLearning();
+            } else {
+                feedbackElement.textContent = "Congratulations! You've completed all the words.";
+            }
+        });
+
+        modeToggleBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            microphoneIcon.style.backgroundColor = isDarkMode ? '#FF5733' : '#007bff';
+            drawWave(isDarkMode ? '#FF5733' : '#007bff');
+            modeToggleBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        });
+
+        // Initialize page in dark mode
+        document.body.classList.add('dark-mode');
+        microphoneIcon.style.backgroundColor = '#FF5733';
+        modeToggleBtn.textContent = 'Light Mode';
+        drawWave('#FF5733');
+    </script>
+</body>
+</html>

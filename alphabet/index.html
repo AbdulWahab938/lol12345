@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Learning Game</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: 'Comic Sans MS', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        #welcomeText {
+            text-align: center;
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .languageButton {
+            background-color: #ffcc00;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .languageButton:hover {
+            background-color: #ffdd33;
+        }
+
+        .languageButton:active {
+            background-color: #ffcc00;
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #alphabetDisplay {
+            display: none;
+            text-align: center;
+        }
+
+        #alphabetText {
+            font-size: 3em;
+            color: #555;
+            margin: 20px 0;
+        }
+
+        #alphabetImage {
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        #recognizedText {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="welcomeText">Welcome to the Alphabet Learning Game</h1>
+        <button class="languageButton" onclick="startGame('kn')">Kannada</button>
+        <button class="languageButton" onclick="startGame('en')">English</button>
+        <div id="alphabetDisplay">
+            <div id="alphabetText"></div>
+            <img id="alphabetImage" src="" alt="Alphabet Image">
+            <div id="recognizedText"></div>
+        </div>
+    </div>
+    <script>
+        let recognition;
+        let currentIndex = 0;
+        let attempt = 0;
+        let welcomeMessageSpoken = false;
+        let language = 'en';
+
+        const accessKey = 'sUlToQh1Q3jNcq36RCyEY-bPeI4B8LHoLfElOShwGYc';
+        const googleApiKey = 'AIzaSyD5Cck43h_wdNEmzQTT4WKXAEhAh_YapGA';
+
+        const kannadaAlphabets = [
+            { letter: "ಅ", word: "ಅಕ್ಕಿ", englishWord: "rice" },
+            { letter: "ಆ", word: "ಆನೆ", englishWord: "elephant" },
+            { letter: "ಇ", word: "ಇಲಿ", englishWord: "rat" },
+            { letter: "ಈ", word: "ಈರುಳ್ಳಿ", englishWord: "onion" },
+            { letter: "ಉ", word: "ಉಪ್ಪು", englishWord: "salt" },
+            { letter: "ಊ", word: "ಊಟ", englishWord: "meal" },
+            { letter: "ಋ", word: "ಋತು", englishWord: "season" },
+            { letter: "ಎ", word: "ಎಲೆ", englishWord: "leaf" },
+            { letter: "ಏ", word: "ಏನಪ್ಪ", englishWord: "what" },
+            { letter: "ಐ", word: "ಐತಿಹಾಸಿಕ", englishWord: "historical" },
+            { letter: "ಒ", word: "ಒಣ", englishWord: "dry" },
+            { letter: "ಓ", word: "ಓಕುಳಿ", englishWord: "dipped" },
+            { letter: "ಅಂ", word: "ಅಂಬು", englishWord: "arrow" },
+            { letter: "ಅಃ", word: "ಅಃ", englishWord: "aha" },
+            { letter: "ಕ", word: "ಕಲ್ಲು", englishWord: "stone" },
+            { letter: "ಖ", word: "ಖಡ್ಗ", englishWord: "sword" },
+            { letter: "ಗ", word: "ಗಿಡ", englishWord: "plant" },
+            { letter: "ಘ", word: "ಘಂಟೆ", englishWord: "bell" },
+            { letter: "ಙ", word: "ಙ", englishWord: "nga" },
+            { letter: "ಚ", word: "ಚಕ್ರ", englishWord: "wheel" },
+            { letter: "ಛ", word: "ಛತ್ರಿ", englishWord: "umbrella" },
+            { letter: "ಜ", word: "ಜನು", englishWord: "knee" },
+            { letter: "ಝ", word: "ಝರಿ", englishWord: "stream" },
+            { letter: "ಞ", word: "ಞಪತ", englishWord: "lord of knowledge" },
+            { letter: "ಟ", word: "ಟಮಟೆ", englishWord: "tomato" },
+            { letter: "ಠ", word: "ಠಕ್ಕ", englishWord: "exact" },
+            { letter: "ಡ", word: "ಡೋಣಿ", englishWord: "boat" },
+            { letter: "ಢ", word: "ಢಕ್ಕ", englishWord: "drum" },
+            { letter: "ಣ", word: "ಣಗ", englishWord: "laugh" },
+            { letter: "ತ", word: "ತಟ್ಟು", englishWord: "plate" },
+            { letter: "ಥ", word: "ಥಟ್ಟನೆ", englishWord: "suddenly" },
+            { letter: "ದ", word: "ದೇವ", englishWord: "god" },
+            { letter: "ಧ", word: "ಧನುಷ", englishWord: "bow" },
+            { letter: "ನ", word: "ನರ", englishWord: "man" },
+            { letter: "ಪ", word: "ಪಟಾಕಿ", englishWord: "firecracker" },
+            { letter: "ಫ", word: "ಫಲ", englishWord: "fruit" },
+            { letter: "ಬ", word: "ಬಳ್ಳೆ", englishWord: "creeper" },
+            { letter: "ಭ", word: "ಭರವಸೆ", englishWord: "hope" },
+            { letter: "ಮ", word: "ಮನೆ", englishWord: "house" },
+            { letter: "ಯ", word: "ಯಜಮಾನ", englishWord: "master" },
+            { letter: "ರ", word: "ರಥ", englishWord: "chariot" },
+            { letter: "ಲ", word: "ಲಿಂಗ", englishWord: "sign" },
+            { letter: "ವ", word: "ವಿದ್ಯುತ್", englishWord: "electricity" },
+            { letter: "ಶ", word: "ಶಕ್ತಿ", englishWord: "power" },
+            { letter: "ಷ", word: "ಷಟ್", englishWord: "six" },
+            { letter: "ಸ", word: "ಸತ್ಯ", englishWord: "truth" },
+            { letter: "ಹ", word: "ಹನುಮ", englishWord: "Hanuman" },
+            { letter: "ಳ", word: "ಳಂಟ", englishWord: "clay" },
+            { letter: "ಕ್ಷ", word: "ಕ್ಷಮೆ", englishWord: "forgiveness" },
+            { letter: "ಜ್ಞ", word: "ಜ್ಞಾನ", englishWord: "knowledge" }
+        ];
+
+        const englishAlphabets = [
+            { letter: "a", word: "apple" },
+            { letter: "b", word: "ball" },
+            { letter: "c", word: "cat" },
+            { letter: "d", word: "dog" },
+            { letter: "e", word: "elephant" },
+            { letter: "f", word: "fish" },
+            { letter: "g", word: "grape" },
+            { letter: "h", word: "hat" },
+            { letter: "i", word: "ice cream" },
+            { letter: "j", word: "jelly" },
+            { letter: "k", word: "kite" },
+            { letter: "l", word: "lion" },
+            { letter: "m", word: "monkey" },
+            { letter: "n", word: "nose" },
+            { letter: "o", word: "orange" },
+            { letter: "p", word: "panda" },
+            { letter: "q", word: "queen" },
+            { letter: "r", word: "rabbit" },
+            { letter: "s", word: "sun" },
+            { letter: "t", word: "tiger" },
+            { letter: "u", word: "umbrella" },
+            { letter: "v", word: "violin" },
+            { letter: "w", word: "whale" },
+            { letter: "x", word: "xylophone" },
+            { letter: "y", word: "yogurt" },
+            { letter: "z", word: "zebra" }
+        ];
+
+        const successMessages = {
+            kn: [
+                'ಒಳ್ಳೆಯ ಕೆಲಸ!',
+                'ಅದ್ಭುತ!',
+                'ನೀವು ಅದನ್ನು ಮಾಡಿದ್ದೀರಿ!',
+                'ಶ್ರೇಷ್ಠವಾದ ಪ್ರಯತ್ನ!'
+            ],
+            en: [
+                'Good job!',
+                'Excellent!',
+                'You did it!',
+                'Great effort!'
+            ]
+        };
+
+        const retryMessages = {
+            kn: [
+                'ಉತ್ತಮ ಪ್ರಯತ್ನ, ಆದರೆ ಅದು ಸರಿಯಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.',
+                'ಅದನ್ನು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.',
+                'ಅದು ಸರಿಯಲ್ಲ, ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.'
+            ],
+            en: [
+                'Good try, but that\'s not correct. Please try again.',
+                'Try that again.',
+                'That\'s not right, try again.'
+            ]
+        };
+
+        const correctAnswerMessages = {
+            kn: [
+                'ಉತ್ತಮ ಪ್ರಯತ್ನ, ಆದರೆ 그것은 ಸರಿಯಾಗಿರಲಿಲ್ಲ. ಸರಿಯಾದ ಉತ್ತರ ',
+                'ಅದ್ಭುತ ಪ್ರಯತ್ನ, ಆದರೆ ಉತ್ತರ ',
+                'ನೀವು ಅದನ್ನು ಮಾಡಿದ್ದೀರಿ, ಆದರೆ ಸರಿಯಾದ ಉತ್ತರ '
+            ],
+            en: [
+                'Good try, but it was not correct. The correct answer is ',
+                'Excellent effort, but the correct answer is ',
+                'You did it, but the correct answer is '
+            ]
+        };
+
+        async function fetchImage(word) {
+            const response = await fetch(`https://api.unsplash.com/photos/random?query=${word}&client_id=${accessKey}`);
+            const data = await response.json();
+            return data.urls.small;
+        }
+
+        async function startGame(selectedLanguage) {
+            language = selectedLanguage;
+            const startButtons = document.querySelectorAll('.languageButton');
+            startButtons.forEach(button => button.style.display = 'none');
+
+            const welcomeMessage = language === 'kn' ? 'ಅಕ್ಷರ ಕಲಿಕಾ ಆಟಕ್ಕೆ ಸ್ವಾಗತ' : 'Welcome to the Alphabet Learning Game';
+            if (!welcomeMessageSpoken) {
+                speak(welcomeMessage, proceedWithGame);
+                welcomeMessageSpoken = true;
+            } else {
+                proceedWithGame();
+            }
+        }
+
+        async function proceedWithGame() {
+            const alphabetDisplay = document.getElementById('alphabetDisplay');
+            alphabetDisplay.style.display = 'block';
+
+            const alphabets = language === 'kn' ? kannadaAlphabets : englishAlphabets;
+
+            if (currentIndex >= alphabets.length) {
+                const endMessage = language === 'kn' ? 'ನೀವು ಎಲ್ಲಾ ಅಕ್ಷರಗಳನ್ನು ಕಲಿತಿದ್ದೀರಿ. ಆಟ ಮುಗಿಯಿತು!' : 'You have learned all alphabets. Game Over!';
+                speak(endMessage);
+                return;
+            }
+
+            const currentAlphabet = alphabets[currentIndex];
+
+            const alphabetTextElement = document.getElementById('alphabetText');
+            alphabetTextElement.textContent = `${currentAlphabet.letter} - ${currentAlphabet.word}`;
+
+            const alphabetImageElement = document.getElementById('alphabetImage');
+            try {
+                const imageURL = await fetchImage(currentAlphabet.englishWord || currentAlphabet.word);
+                alphabetImageElement.src = imageURL;
+            } catch (error) {
+                console.error('Error fetching image:', error);
+            }
+
+            attempt = 0;
+
+            const recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = '';
+
+            const speakMessage = language === 'kn' ? `ದಯವಿಟ್ಟು ${currentAlphabet.letter} ಅಂದರೆ ${currentAlphabet.word} ಎಂದು ಹೇಳಿ` : `Please say ${currentAlphabet.letter} for ${currentAlphabet.word}`;
+            speak(speakMessage, startListening);
+        }
+
+        function startListening() {
+            if (recognition) {
+                recognition.stop();
+            }
+
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = language === 'kn' ? 'kn-IN' : 'en-US';
+
+            recognition.onresult = function (event) {
+                clearTimeout(recognitionTimeout);
+                const userInput = event.results[0][0].transcript.trim().toLowerCase();
+                displayRecognizedText(userInput);
+                identifyAlphabet(userInput);
+            };
+
+            recognition.onerror = function (event) {
+                if (event.error === 'no-speech') {
+                    clearTimeout(recognitionTimeout);
+                    const errorMessage = language === 'kn' ? 'ಗುರುತಿಸಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.' : 'Not recognized. Please try again.';
+                    speak(errorMessage, function () {
+                        startListening();
+                    });
+                }
+            };
+
+            recognition.start();
+
+            recognitionTimeout = setTimeout(function () {
+                recognition.stop();
+                const errorMessage = language === 'kn' ? 'ಗುರುತಿಸಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.' : 'Not recognized. Please try again.';
+                speak(errorMessage, function () {
+                    startListening();
+                });
+            }, 5000);
+        }
+
+        function displayRecognizedText(text) {
+            const recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = `You said: "${text}"`;
+        }
+
+        function getRandomMessage(messages) {
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function speak(message, callback) {
+            const voiceParams = language === 'kn' ? { languageCode: 'kn-IN', name: 'kn-IN-Wavenet-D' } : { languageCode: 'en-US', name: 'en-US-Wavenet-D' };
+            const ttsRequest = {
+                input: { text: message },
+                voice: voiceParams,
+                audioConfig: { audioEncoding: 'MP3' }
+            };
+
+            fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleApiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ttsRequest)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+                    audio.play();
+                    audio.onended = callback;
+                })
+                .catch(error => console.error('Error synthesizing speech:', error));
+        }
+
+        function identifyAlphabet(userInput) {
+            const alphabets = language === 'kn' ? kannadaAlphabets : englishAlphabets;
+            const currentAlphabet = alphabets[currentIndex];
+
+            if (userInput.includes(currentAlphabet.word.toLowerCase())) {
+                const successMessage = getRandomMessage(successMessages[language]);
+                speak(successMessage, function () {
+                    currentIndex++;
+                    proceedWithGame();
+                });
+            } else {
+                if (attempt === 0) {
+                    attempt++;
+                    const retryMessage = getRandomMessage(retryMessages[language]);
+                    speak(retryMessage, function () {
+                        startListening();
+                    });
+                } else {
+                    const correctAnswerMessage = getRandomMessage(correctAnswerMessages[language]) + currentAlphabet.word;
+                    speak(correctAnswerMessage, function () {
+                        currentIndex++;
+                        proceedWithGame();
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

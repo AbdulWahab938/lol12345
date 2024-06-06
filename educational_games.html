@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Games</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+        body {
+            background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20220917/pngtree-luxurious-gradient-blue-background-with-a-smooth-dark-hue-and-black-studio-banner-photo-image_39157404.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Oswald', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 100px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        h1 {
+            color: #4B49AC;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+            height: 100%;
+            max-width: 350px;
+            margin: auto;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 20px;
+            height: 250px;
+            overflow: hidden;
+            background-color: #F7F7F7;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #4B49AC;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-text {
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 7;
+            -webkit-box-orient: vertical;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.1);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        a:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .row>.col-md-4 {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: float 4s ease-in-out infinite, pop 2s infinite;
+        }
+
+        .row>.col-md-4:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .row>.col-md-4:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            background-color: #31719f;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Educational Games</h1>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <a href="alphabet/index.html">
+                    <div class="card">
+                        <img class="card-img-top" src="https://www.splashlearn.com/blog/wp-content/uploads/2023/11/best-alphabet-learning-apps-for-kids-696x418.jpg" alt="Alphabet Learning Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Alphabet Learning</h5>
+                            <p class="card-text">Engage in fun and interactive activities to learn the alphabet. Enhance your child's letter recognition and pronunciation skills with games and exercises designed to make learning enjoyable.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="Identify/index.html">
+                    <div class="card">
+                        <img class="card-img-top" src="https://img.freepik.com/premium-photo/picture-group-animals-including-one-which-is-called-lion_910054-2366.jpg" alt="Identification Games Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Identification Games</h5>
+                            <p class="card-text">Sharpen your observation and critical thinking skills with identification games. Explore different themes and scenarios while learning to recognize objects, shapes, animals, and colors in a fun and interactive way.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="vocabs/index.html">
+                    <div class="card">
+                        <img class="card-img-top" src="https://media.istockphoto.com/id/1271673071/photo/quote-words-have-power-made-out-of-wooden-letters-on-bright-yellow-background.jpg?s=612x612&w=0&k=20&c=nrdrLN5jSdzc4XjWPIRLVR-RovzX1Kd9qckU1OP2Wv8=" alt="Vocabulary Learning Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Vocabulary Learning</h5>
+                            <p class="card-text">Expand your vocabulary with interactive games designed to enhance word recognition, spelling, and comprehension. Engage with a variety of exercises and challenges to improve language skills.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

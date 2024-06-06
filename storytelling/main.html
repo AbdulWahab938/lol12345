@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Storytelling</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+        body {
+            background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20220917/pngtree-luxurious-gradient-blue-background-with-a-smooth-dark-hue-and-black-studio-banner-photo-image_39157404.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Oswald', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 100px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        h1 {
+            color: #4B49AC;
+        }
+
+        .card {
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+            height: 100%;
+            max-width: 350px;
+            margin: auto;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 20px;
+            height: 250px;
+            overflow: hidden;
+            background-color: #F7F7F7;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #4B49AC;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-text {
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 7;
+            -webkit-box-orient: vertical;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.1);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        a:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .row>.col-md-4 {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: float 4s ease-in-out infinite, pop 2s infinite;
+        }
+
+        .row>.col-md-4:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .row>.col-md-4:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center">Interactive Storytelling</h1>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <a href="haret.html">
+                    <div class="card">
+                        <img class="card-img-top" src="https://i0.wp.com/doodlewash.com/wp-content/uploads/2020/08/Day-5-Tortoise-And-The-Hare-Watercolor-Painting-Illustration.jpg?fit=1024%2C720&ssl=1" alt="The Hare and the Tortoise Image">
+                        <div class="card-body">
+                            <h5 class="card-title">The Hare and the Tortoise</h5>
+                            <p class="card-text">Join the classic race between the fast hare and the slow but steady tortoise. Discover who wins in this timeless story.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="thirstyCrow.html">
+                    <div class="card">
+                        <img class="card-img-top" src="https://cdn-images-3.listennotes.com/podcasts/childrens-short/the-thirsty-crow-QACk0uLmTZ6-EA0514GrP_b.1400x1400.jpg" alt="The Thirsty Crow Image">
+                        <div class="card-body">
+                            <h5 class="card-title">The Thirsty Crow</h5>
+                            <p class="card-text">Experience the ingenuity of the thirsty crow as it finds a clever way to drink water. Learn the valuable lesson this story teaches.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

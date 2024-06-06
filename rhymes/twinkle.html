@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twinkle Twinkle Little Star</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #videoContainer {
+            display: none;
+            margin-top: 20px;
+            position: relative;
+            width: 560px;
+            height: 315px;
+            border: 2px solid #333;
+            background-color: #000;
+        }
+
+        #customControls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #playButton,
+        #pauseButton {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        #playButton {
+            background: url('https://img.icons8.com/ios-filled/50/000000/play.png') no-repeat center center;
+            background-size: contain;
+        }
+
+        #pauseButton {
+            background: url('https://img.icons8.com/ios-filled/50/000000/pause.png') no-repeat center center;
+            background-size: contain;
+        }
+
+        #recognizedText {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: blue;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Twinkle Twinkle Little Star</h1>
+    <button id="startButton" onclick="startRhyme()">Start</button>
+    <div id="videoContainer">
+        <iframe id="video" width="560" height="315" src="https://www.youtube.com/embed/kAzg5iYRzU8?enablejsapi=1&controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div id="customControls">
+            <div id="playButton" onclick="playVideo()"></div>
+            <div id="pauseButton" onclick="pauseVideo()"></div>
+        </div>
+    </div>
+    <div id="recognizedText"></div>
+
+    <script>
+        var recognition;
+        const targetPhrases = [
+            "twinkle twinkle little star, how i wonder what you are",
+            "up above the world so high, like a diamond in the sky"
+        ];
+
+        function startRhyme() {
+            var startButton = document.getElementById('startButton');
+            startButton.style.display = 'none';
+
+            speak("Let's learn Twinkle Twinkle Little Star", function() {
+                speak("Please listen carefully", function() {
+                    showVideoContainer();
+                    playVideo();
+                    setTimeout(() => pauseVideoForSpeech(0), 36000); // Pause the video at 36 seconds for the first speech recognition
+                });
+            });
+        }
+
+        function showVideoContainer() {
+            var videoContainer = document.getElementById('videoContainer');
+            videoContainer.style.display = 'block';
+        }
+
+        function playVideo() {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+
+        function pauseVideo() {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+
+        function pauseVideoForSpeech(breakpointIndex) {
+            pauseVideo();
+
+            if (breakpointIndex === 0) {
+                speak("Please say 'Twinkle Twinkle Little Star, how I wonder what you are'", () => startRecognition(breakpointIndex));
+            } else if (breakpointIndex === 1) {
+                speak("Please say 'Up above the world so high, like a diamond in the sky'", () => startRecognition(breakpointIndex));
+            }
+        }
+
+        function startRecognition(breakpointIndex) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                var userInput = event.results[0][0].transcript.trim().toLowerCase();
+                displayRecognizedText(userInput);
+                if (isMoreThan50PercentCorrect(userInput, targetPhrases[breakpointIndex])) {
+                    if (breakpointIndex === 0) {
+                        speak("Correct! Resuming video.", () => resumeVideoWithNextPause(140000)); // Next pause at 140 seconds
+                    } else if (breakpointIndex === 1) {
+                        speak("Correct! Resuming video.", resumeVideo);
+                    }
+                } else {
+                    if (breakpointIndex === 0) {
+                        speak("Incorrect. Restarting video.", restartVideo);
+                    } else if (breakpointIndex === 1) {
+                        speak("Incorrect. Repeating from 38 seconds.", () => repeatVideoFrom(38000));
+                    }
+                }
+            };
+
+            recognition.start();
+        }
+
+        function displayRecognizedText(text) {
+            var recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = `Recognized: "${text}"`;
+            recognizedTextElement.style.display = 'block';
+        }
+
+        function isMoreThan50PercentCorrect(userInput, target) {
+            const userWords = userInput.split(" ");
+            const targetWords = target.split(" ");
+            let correctWordCount = 0;
+
+            targetWords.forEach(word => {
+                if (userWords.includes(word)) {
+                    correctWordCount++;
+                }
+            });
+
+            return correctWordCount / targetWords.length > 0.5;
+        }
+
+        function resumeVideoWithNextPause(nextPauseTime) {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            setTimeout(() => pauseVideoForSpeech(1), nextPauseTime);
+        }
+
+        function resumeVideo() {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+
+        function restartVideo() {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"seekTo","args":[0, true]}', '*');
+            video.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+
+        function repeatVideoFrom(timeInMillis) {
+            var video = document.getElementById('video').contentWindow;
+            video.postMessage('{"event":"command","func":"seekTo","args":[' + (timeInMillis / 1000) + ', true]}', '*');
+            video.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+
+        function speak(message, callback) {
+            const voiceParams = { languageCode: 'en-US', name: 'en-US-Wavenet-D' };
+            const ttsRequest = {
+                input: { text: message },
+                voice: voiceParams,
+                audioConfig: { audioEncoding: 'MP3' }
+            };
+
+            fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyD5Cck43h_wdNEmzQTT4WKXAEhAh_YapGA`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ttsRequest)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+                    audio.play();
+                    audio.onended = callback;
+                })
+                .catch(error => console.error('Error synthesizing speech:', error));
+        }
+    </script>
+</body>
+
+</html>

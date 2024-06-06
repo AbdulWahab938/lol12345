@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Robotec</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+        body {
+            background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20220917/pngtree-luxurious-gradient-blue-background-with-a-smooth-dark-hue-and-black-studio-banner-photo-image_39157404.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Oswald', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            width: 100%;
+            background-color: #4B49AC;
+            color: white;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .hamburger-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .logout-button {
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+        }
+
+        .search-bar {
+            width: 30%;
+            border-radius: 20px;
+            padding: 5px 10px;
+            border: none;
+        }
+
+        .container {
+            margin-top: 100px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        h1 {
+            color: #4B49AC;
+        }
+
+        .card {
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+            height: 100%;
+            max-width: 350px;
+            margin: auto;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 20px;
+            height: 250px;
+            overflow: hidden;
+            background-color: #F7F7F7;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #4B49AC;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-text {
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 7;
+            -webkit-box-orient: vertical;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.1);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        a:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .row>.col-md-4 {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: float 4s ease-in-out infinite, pop 2s infinite;
+        }
+
+        .row>.col-md-4:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .row>.col-md-4:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            background-color: #31719f;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            left: -30%;
+            top: 0;
+            width: 30%;
+            height: 100%;
+            background-color: #4B49AC;
+            color: white;
+            overflow: auto;
+            transition: 0.5s;
+            padding-top: 60px;
+            z-index: 1001;
+        }
+
+        .sidebar img {
+            width: 80%;
+            margin: 20px auto;
+            display: block;
+            border-radius: 50%;
+        }
+
+        .sidebar h2, .sidebar p {
+            text-align: center;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #5753c9;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 36px;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <div class="hamburger-icon" onclick="toggleSidebar()">☰</div>
+            <input type="text" class="form-control search-bar" placeholder="Search...">
+            <button class="logout-button" onclick="logout()">Logout</button>
+        </div>
+    </header>
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="toggleSidebar()">&times;</a>
+        <img id="studentPhoto" src="" alt="Student Photo">
+        <h2 id="studentName"></h2>
+        <p id="studentAge"></p>
+        <p id="studentGender"></p>
+    </div>
+    <div class="container">
+        <h1 class="text-center mb-5">Welcome to Robotec</h1>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <a href="educational_games.html">
+                    <div class="card">
+                        <img class="card-img-top"
+                            src="https://kneebouncers.com/wp-content/uploads/2023/05/LilGirl_surprised2.png"
+                            alt="Card 1 Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Educational Games</h5>
+                            <p class="card-text">Delve into educational games offering interactive exploration of objects,
+                                animals, shapes, colors, and vocabulary. Engage with captivating visuals and challenges to
+                                foster essential skills and confidence in learning. Join the adventure!</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="storytelling/main.html">
+                    <div class="card">
+                        <img class="card-img-top"
+                            src="https://www.teachhub.com/wp-content/uploads/2015/08/Aug-26-Storytelling-in-the-Classroom-as-a-Teaching-Strategy_web.jpg"
+                            alt="Card 2 Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Storytelling</h5>
+                            <p class="card-text">Embark on storytelling escapades brimming with wonder, excitement, and
+                                wisdom. Immerse yourself in enchanting tales, where magical realms and unforgettable
+                                characters await. Let your imagination roam free as stories unfurl before you!</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="rhymes/main.html">
+                    <div class="card">
+                        <img class="card-img-top"
+                            src="https://www.kidloland.com/blog/wp-content/uploads/2019/03/IMG_1050-1038x576.png"
+                            alt="Card 3 Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Rhymes</h5>
+                            <p class="card-text">Immerse yourself in the world of music with our interactive play-along
+                                experiences! Discover the joy of playing instruments and creating melodies in a fun,
+                                engaging environment.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                fetchStudentDetails();
+            }
+        }
+
+        function fetchStudentDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('username');
+            fetch(`http://localhost:3000/get-student-details?name=${username}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('studentPhoto').src = data.photo;
+                    document.getElementById('studentName').textContent = `Name: ${data.studentName}`;
+                    document.getElementById('studentAge').textContent = `Age: ${data.age}`;
+                    document.getElementById('studentGender').textContent = `Gender: ${data.gender}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching student details:', error);
+                    alert('Error fetching student details');
+                });
+        }
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

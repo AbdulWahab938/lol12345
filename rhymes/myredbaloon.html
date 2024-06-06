@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Red Balloon</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #videoContainer {
+            display: none;
+            margin-top: 20px;
+            position: relative;
+            width: 560px;
+            height: 315px;
+            border: 2px solid #333;
+            background-color: #000;
+        }
+
+        #recognizedText {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: blue;
+            display: none;
+        }
+    </style>
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+
+<body>
+    <h1>My Red Balloon</h1>
+    <button id="startButton" onclick="startRhyme()">Start</button>
+    <div id="videoContainer">
+        <div id="player"></div>
+    </div>
+    <div id="recognizedText"></div>
+
+    <script>
+        var player;
+        var recognition;
+        const questions = [
+            { question: "What color is the balloon in the rhyme?", answer: "The balloon is red" },
+            { question: "Where does the balloon fly in the rhyme?", answer: "The balloon flies up in the sky" },
+            { question: "Who is holding the balloon in the rhyme?", answer: "The child is holding the balloon" },
+            { question: "What happens to the balloon at the end of the rhyme?", answer: "The balloon flies away" },
+            { question: "How does the child feel about the balloon flying away in the rhyme?", answer: "The child feels sad but watches it fly high" }
+        ];
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '315',
+                width: '560',
+                videoId: 'ZaIu32TWX64', // Replace with your YouTube video ID
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                },
+                playerVars: {
+                    'controls': 0 // Disable player controls
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            document.getElementById('startButton').disabled = false;
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                askQuestion();
+            }
+        }
+
+        function startRhyme() {
+            var startButton = document.getElementById('startButton');
+            startButton.style.display = 'none';
+
+            speak("Let's learn My Red Balloon", function () {
+                speak("Please listen carefully", function () {
+                    showVideoContainer();
+                    playVideo();
+                });
+            });
+        }
+
+        function showVideoContainer() {
+            var videoContainer = document.getElementById('videoContainer');
+            videoContainer.style.display = 'block';
+        }
+
+        function playVideo() {
+            player.playVideo();
+        }
+
+        function askQuestion() {
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            const selectedQuestion = questions[randomIndex];
+            speak(selectedQuestion.question, () => startRecognition(selectedQuestion.answer));
+        }
+
+        function startRecognition(correctAnswer) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function (event) {
+                var userInput = event.results[0][0].transcript.trim().toLowerCase();
+                displayRecognizedText(userInput);
+                if (isCorrectAnswer(userInput, correctAnswer.toLowerCase())) {
+                    speak("Correct! Congratulations!", () => blinkPage("green"));
+                } else {
+                    speak(`Incorrect. The correct answer was "${correctAnswer}".`, () => blinkPage("red"));
+                }
+            };
+
+            recognition.start();
+        }
+
+        function displayRecognizedText(text) {
+            var recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = `Recognized: "${text}"`;
+            recognizedTextElement.style.display = 'block';
+        }
+
+        function isCorrectAnswer(userInput, correctAnswer) {
+            const userInputWords = userInput.split(' ');
+            const correctAnswerWords = correctAnswer.split(' ');
+            let correctCount = 0;
+
+            userInputWords.forEach(word => {
+                if (correctAnswerWords.includes(word)) {
+                    correctCount++;
+                }
+            });
+
+            const accuracy = (correctCount / correctAnswerWords.length) * 100;
+            return accuracy >= 50;
+        }
+
+        function blinkPage(color) {
+            let body = document.body;
+            let originalColor = body.style.backgroundColor;
+            body.style.backgroundColor = color;
+            setTimeout(() => {
+                body.style.backgroundColor = originalColor;
+            }, 500);
+        }
+
+        function speak(message, callback) {
+            const voiceParams = { languageCode: 'en-US', name: 'en-US-Wavenet-D' };
+            const ttsRequest = {
+                input: { text: message },
+                voice: voiceParams,
+                audioConfig: { audioEncoding: 'MP3' }
+            };
+
+            fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyD5Cck43h_wdNEmzQTT4WKXAEhAh_YapGA`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ttsRequest)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+                    audio.play();
+                    audio.onended = callback;
+                })
+                .catch(error => console.error('Error synthesizing speech:', error));
+        }
+    </script>
+</body>
+
+</html>

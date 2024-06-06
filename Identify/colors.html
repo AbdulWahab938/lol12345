@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identify Colors Game</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: 'Comic Sans MS', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        #welcomeText {
+            text-align: center;
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .langButton {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            color: white;
+            margin: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .langButton:hover {
+            background-color: #0056b3;
+        }
+
+        #startButton {
+            background-color: #ffcc00;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #startButton:hover {
+            background-color: #ffdd33;
+        }
+
+        #startButton:active {
+            background-color: #ffcc00;
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #colorDisplay {
+            display: none;
+            text-align: center;
+        }
+
+        #colorBox {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            transition: transform 0.3s ease;
+        }
+
+        #recognizedText {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        #recognizedText.correct {
+            color: green;
+            animation: correctAnimation 1s ease-in-out;
+        }
+
+        @keyframes correctAnimation {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .dropdown {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <button class="langButton" onclick="changeLanguage('en')">English</button>
+            <button class="langButton" onclick="changeLanguage('kn')">Kannada</button>
+        </div>
+        <h1 id="welcomeText">Welcome to the Color Identification Game</h1>
+        <button id="startButton" onclick="startGame()">Start</button>
+        <div id="colorDisplay">
+            <div id="colorBox"></div>
+            <div id="recognizedText"></div>
+        </div>
+    </div>
+    <script>
+        const googleApiKey = 'AIzaSyD5Cck43h_wdNEmzQTT4WKXAEhAh_YapGA'; // Your Google Cloud API key
+
+        let recognition;
+        let colors = [];
+        let currentColor;
+        let welcomeMessageSpoken = false;
+        let language = localStorage.getItem('language') || 'en';
+
+        const colorNames = {
+            en: ["red", "blue", "green", "yellow", "orange", "purple", "pink", "brown", "black", "white"],
+            kn: ["ಕೆಂಪು", "ನೀಲಿ", "ಹಸಿರು", "ಹಳದಿ", "ಕಿತ್ತಳೆ", "ನೇರಳೆ", "ಗುಲಾಬಿ", "ಕಂದು", "ಕಪ್ಪು", "ಬಿಳಿ"]
+        };
+
+        const colorTranslations = {
+            "red": "ಕೆಂಪು",
+            "blue": "ನೀಲಿ",
+            "green": "ಹಸಿರು",
+            "yellow": "ಹಳದಿ",
+            "orange": "ಕಿತ್ತಳೆ",
+            "purple": "ನೇರಳೆ",
+            "pink": "ಗುಲಾಬಿ",
+            "brown": "ಕಂದು",
+            "black": "ಕಪ್ಪು",
+            "white": "ಬಿಳಿ"
+        };
+
+        const colorHexes = {
+            "red": "#FF0000",
+            "blue": "#0000FF",
+            "green": "#008000",
+            "yellow": "#FFFF00",
+            "orange": "#FFA500",
+            "purple": "#800080",
+            "pink": "#FFC0CB",
+            "brown": "#A52A2A",
+            "black": "#000000",
+            "white": "#FFFFFF"
+        };
+
+        async function loadColors() {
+            colors = colorNames[language];
+        }
+
+        const correctResponseStarters = {
+            en: ["Great job!", "Well done!", "Correct!", "Fantastic!", "Excellent!"],
+            kn: ["ಅತ್ಯುತ್ತಮ ಕೆಲಸ!", "ಚೆನ್ನಾಗಿದೆ!", "ಸರಿಯಾದ ಉತ್ತರ!", "ಅದ್ಭುತ!", "ಅತ್ಯುತ್ತಮ!"]
+        };
+        const correctResponseEndings = {
+            en: ["You got it right.", "That's the right answer.", "You nailed it.", "Keep it up!"],
+            kn: ["ನೀವು ಸರಿಯಾಗಿದೆ.", "ಅದು ಸರಿಯಾದ ಉತ್ತರ.", "ನೀವು ಅದನ್ನು ಪತ್ತೆಹಚ್ಚಿದ್ದೀರಿ.", "ಮುಂದುವರಿಯಿರಿ!"]
+        };
+
+        const incorrectResponseStarters = {
+            en: ["That's not quite right.", "Good try, but", "Not exactly.", "Hmm, that's not it."],
+            kn: ["ಅದು ಸರಿಯಲ್ಲ.", "ಮೆಚ್ಚಿನ ಪ್ರಯತ್ನ, ಆದರೆ", "ಸರಿಯಲ್ಲ.", "ಹ್ಮ್ಮ್, ಅದು ಅಲ್ಲ."]
+        };
+        const incorrectResponseEndings = {
+            en: ["The correct answer is", "It's actually", "The right name is"],
+            kn: ["ಸರಿಯಾದ ಉತ್ತರವು", "ಇದು ನಿಜವಾಗಿ", "ಸರಿಯಾದ ಹೆಸರು"]
+        };
+
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        async function speak(message, callback) {
+            const voiceParams = language === 'en' ? { languageCode: 'en-IN', name: 'en-IN-Wavenet-A' } : { languageCode: 'kn-IN', name: 'kn-IN-Wavenet-A' };
+            const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleApiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input: { text: message },
+                    voice: voiceParams,
+                    audioConfig: { audioEncoding: 'MP3' },
+                }),
+            });
+
+            const data = await response.json();
+            const audioUrl = `data:audio/mp3;base64,${data.audioContent}`;
+            const audio = new Audio(audioUrl);
+            audio.onended = callback;
+            audio.play();
+        }
+
+        async function startGame() {
+            const startButton = document.getElementById('startButton');
+            startButton.style.display = 'none';
+
+            await loadColors();
+
+            if (colors.length === 0) {
+                speak(language === 'en' ? 'No colors found. Game Over!' : 'ಯಾವುದೇ ಬಣ್ಣಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ಆಟ ಮುಗಿದಿದೆ!');
+                return;
+            }
+
+            if (!welcomeMessageSpoken) {
+                speak(language === 'en' ? 'Welcome to the Color Identification Game' : 'ಬಣ್ಣ ಗುರುತಿಸುವ ಆಟಕ್ಕೆ ಸ್ವಾಗತ', proceedWithGame);
+                welcomeMessageSpoken = true;
+            } else {
+                proceedWithGame();
+            }
+        }
+
+        function proceedWithGame() {
+            const colorDisplay = document.getElementById('colorDisplay');
+            colorDisplay.style.display = 'block';
+
+            if (colors.length === 0) {
+                speak(language === 'en' ? 'You have identified all colors. Game Over!' : 'ನೀವು ಎಲ್ಲಾ ಬಣ್ಣಗಳನ್ನು ಗುರುತಿಸಿದ್ದೀರಿ. ಆಟ ಮುಗಿದಿದೆ!');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * colors.length);
+            currentColor = colorNames['en'][randomIndex]; // Corrected to ensure correct color
+
+            const colorBox = document.getElementById('colorBox');
+            colorBox.style.backgroundColor = colorHexes[currentColor];
+
+            attempt = 0;
+            dontKnowCount = 0;
+
+            const recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = '';
+
+            speak(language === 'en' ? 'Please say the name of the color you see' : 'ನೀವು ನೋಡುವ ಬಣ್ಣದ ಹೆಸರು ಹೇಳಿ', startListening);
+        }
+
+        function startListening() {
+            if (recognition) {
+                recognition.stop();
+            }
+
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = language === 'en' ? 'en-US' : 'kn-IN';
+
+            recognition.onresult = function (event) {
+                clearTimeout(recognitionTimeout);
+                const userInput = event.results[0][0].transcript.trim().toLowerCase();
+                displayRecognizedText(userInput);
+
+                if (userInput) {
+                    if (userInput.includes("i don't know") || userInput.includes("i do not know") || userInput.includes("ನಾನು ಗೊತ್ತಿಲ್ಲ")) {
+                        handleDontKnowResponse();
+                    } else {
+                        dontKnowCount = 0;
+                        const classification = classifyInput(userInput, currentColor);
+                        const response = generateResponse(classification, currentColor);
+                        speak(response, function () {
+                            if (classification === "correct" || classification === "incorrect") {
+                                colors = colors.filter(color => color !== currentColor);
+                            }
+                            proceedWithGame();
+                        });
+                        if (classification === "correct") {
+                            document.getElementById('recognizedText').classList.add('correct');
+                        } else {
+                            document.getElementById('recognizedText').classList.remove('correct');
+                        }
+                    }
+                } else {
+                    const retryMessage = language === 'en' ? 'Not recognized. Please try again.' : 'ಗುರುತಿಸಲ್ಪಟ್ಟಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+                    speak(retryMessage, function () {
+                        startListening();
+                    });
+                }
+            };
+
+            recognition.onerror = function (event) {
+                if (event.error === 'no-speech') {
+                    clearTimeout(recognitionTimeout);
+                    const retryMessage = language === 'en' ? 'Not recognized. Please try again.' : 'ಗುರುತಿಸಲ್ಪಟ್ಟಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+                    speak(retryMessage, function () {
+                        startListening();
+                    });
+                }
+            };
+
+            recognition.start();
+
+            recognitionTimeout = setTimeout(function () {
+                recognition.stop();
+                const retryMessage = language === 'en' ? 'Not recognized. Please try again.' : 'ಗುರುತಿಸಲ್ಪಟ್ಟಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+                speak(retryMessage, function () {
+                    startListening();
+                });
+            }, 5000); // 5 seconds timeout
+        }
+
+        function displayRecognizedText(text) {
+            const recognizedTextElement = document.getElementById('recognizedText');
+            recognizedTextElement.textContent = `You said: "${text}"`;
+        }
+
+        function classifyInput(userInput, currentColor) {
+            const correctName = language === 'en' ? currentColor : colorTranslations[currentColor];
+            if (userInput.includes(correctName)) {
+                return "correct";
+            } else {
+                return "incorrect";
+            }
+        }
+
+        function generateResponse(classification, currentColor) {
+            const correctResponses = correctResponseStarters[language];
+            const correctEndings = correctResponseEndings[language];
+
+            const incorrectResponses = incorrectResponseStarters[language];
+            const incorrectEndings = incorrectResponseEndings[language];
+
+            const responseColorName = language === 'en' ? currentColor : colorTranslations[currentColor];
+
+            switch (classification) {
+                case "correct":
+                    return `${getRandomElement(correctResponses)} ${getRandomElement(correctEndings)} ${language === 'en' ? "It's" : "ಇದು"} ${responseColorName}.`;
+                case "incorrect":
+                    return `${getRandomElement(incorrectResponses)} ${getRandomElement(incorrectEndings)} ${language === 'en' ? "It's" : "ಇದು"} ${responseColorName}.`;
+                default:
+                    return language === 'en' ? "I'm not sure what that is. Let's try again!" : "ನಾನು ಅದನ್ನು ಗುರುತಿಸಿಲ್ಲ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸೋಣ!";
+            }
+        }
+
+        function handleDontKnowResponse() {
+            dontKnowCount++;
+            if (dontKnowCount === 1) {
+                const message = language === 'en' ? "That's okay. Just say whatever you know about it." : "ಅದು ಸರಿ. ನೀವು ಅದು ಹೇಗೆ ಗೊತ್ತಿರುವುದನ್ನು ಹೇಳಿ.";
+                speak(message, startListening);
+            } else if (dontKnowCount === 2) {
+                const message = language === 'en' ? `Don't worry! You can do it! The answer is ${colorTranslations[currentColor]}. Let's try another one.` : `ಚಿಂತೆ ಬೇಡ! ನೀವು ಅದನ್ನು ಮಾಡಬಹುದು! ಉತ್ತರ ${colorTranslations[currentColor]}. ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.`;
+                speak(message, proceedWithGame);
+                colors = colors.filter(color => color !== currentColor);
+            }
+        }
+
+        function changeLanguage(newLanguage) {
+            language = newLanguage;
+            localStorage.setItem('language', language);
+            loadColors();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadColors();
+        });
+    </script>
+</body>
+
+</html>
